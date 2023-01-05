@@ -1,0 +1,94 @@
+# Drop, Recreate and Use it to create the graph schema
+
+DROP GRAPH legoland
+CREATE GRAPH legoland()
+USE GRAPH legoland
+
+CREATE SCHEMA_CHANGE JOB cr_legoland_sch FOR GRAPH legoland { 
+
+  ADD VERTEX colors (
+      PRIMARY_ID id STRING
+    , name STRING
+    , rgb STRING
+    , is_trans STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX elements (
+      PRIMARY_ID element_id STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX inventories (
+      PRIMARY_ID id STRING
+    , version INT
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX minifigs (
+      PRIMARY_ID fig_num STRING
+    , name STRING
+    , num_parts INT
+    , img_url STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX part_categories (
+      PRIMARY_ID id UINT
+    , name STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX parts (
+      PRIMARY_ID part_num STRING
+    , name STRING
+    , part_material STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX sets (
+      PRIMARY_ID set_num STRING
+    , name STRING
+    , year STRING
+    , num_parts INT
+    , img_url STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD VERTEX themes (
+      PRIMARY_ID id STRING
+    , name STRING
+  ) WITH STATS="OUTDEGREE_BY_EDGETYPE", primary_id_as_attribute="true";
+
+  ADD UNDIRECTED EDGE inventory_minifigs (
+    FROM inventories, TO minifigs, quantity INT
+  );
+
+  ADD UNDIRECTED EDGE inventory_parts (
+    FROM inventories, TO parts, quantity INT, is_spare STRING, img_url STRING
+  );
+
+  ADD UNDIRECTED EDGE inventory_sets (
+    FROM inventories, TO sets, quantity INT
+  );
+
+  ADD UNDIRECTED EDGE colors_to_elements (
+    FROM colors, TO elements
+  );
+
+  ADD UNDIRECTED EDGE parts_to_elements (
+    FROM parts, TO elements
+  );
+
+  ADD UNDIRECTED EDGE parts_to_parts (
+    FROM parts, TO parts, rel_type STRING
+  );
+
+  ADD UNDIRECTED EDGE part_categories_to_parts (
+    FROM part_categories, TO parts
+  );
+
+  ADD UNDIRECTED EDGE themes_to_sets (
+    FROM themes, TO sets
+  );
+
+  ADD UNDIRECTED EDGE themes_to_themes (
+    FROM themes, TO themes
+  );
+}
+
+RUN SCHEMA_CHANGE JOB cr_legoland_sch
+DROP JOB cr_legoland_sch

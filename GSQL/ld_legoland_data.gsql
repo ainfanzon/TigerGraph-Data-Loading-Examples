@@ -1,0 +1,127 @@
+# Load data
+
+USE GRAPH legoland
+
+CREATE LOADING JOB ld_legoland_data FOR GRAPH legoland {
+
+# DEFINE source files
+#
+  DEFINE FILENAME        inventories = "/home/tigergraph/mydata/legoland/data/tigergraph/inventories.csv";
+  DEFINE FILENAME              parts = "/home/tigergraph/mydata/legoland/data/tigergraph/parts.tsv";
+  DEFINE FILENAME           minifigs = "/home/tigergraph/mydata/legoland/data/tigergraph/minifigs.tsv";
+  DEFINE FILENAME               sets = "/home/tigergraph/mydata/legoland/data/tigergraph/sets.tsv";
+  DEFINE FILENAME             colors = "/home/tigergraph/mydata/legoland/data/tigergraph/colors.csv";
+  DEFINE FILENAME    part_categories = "/home/tigergraph/mydata/legoland/data/tigergraph/part_categories.tsv";
+  DEFINE FILENAME           elements = "/home/tigergraph/mydata/legoland/data/tigergraph/elements.csv";
+  DEFINE FILENAME             themes = "/home/tigergraph/mydata/legoland/data/tigergraph/themes.csv";
+  DEFINE FILENAME    inventory_parts = "/home/tigergraph/mydata/legoland/data/tigergraph/inventory_parts.csv";
+  DEFINE FILENAME inventory_minifigs = "/home/tigergraph/mydata/legoland/data/tigergraph/inventory_minifigs.csv";
+  DEFINE FILENAME     inventory_sets = "/home/tigergraph/mydata/legoland/data/tigergraph/inventory_sets.csv";
+  DEFINE FILENAME part_relationships = "/home/tigergraph/mydata/legoland/data/tigergraph/part_relationships.csv";
+
+# lOAD VERTICES
+#
+  LOAD inventories TO VERTEX inventories VALUES (
+      $"id"
+    , $"version"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD parts TO VERTEX parts VALUES (
+      $"part_num"
+    , $"name"
+    , $"part_material"
+  ) USING SEPARATOR="\t", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD minifigs TO VERTEX minifigs VALUES (
+      $"fig_num"
+    , $"name"
+    , $"num_parts"
+    , $"img_url"
+  ) USING SEPARATOR="\t", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD sets TO VERTEX sets VALUES (
+      $"set_num"
+    , $"name"
+    , $"year"
+    , $"num_parts"
+    , $"img_url"
+  ) USING SEPARATOR="\t", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD part_categories TO VERTEX part_categories VALUES (
+      $"id"
+    , $"name"
+  ) USING SEPARATOR="\t", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD elements TO VERTEX elements VALUES (
+      $"element_id"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD themes TO VERTEX themes VALUES (
+      $"id"
+    , $"name"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD colors TO VERTEX colors VALUES (
+      $"id"
+    , $"name"
+    , $"rgb"
+    , $"is_trans"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+# LOAD EDGES
+#
+  LOAD inventory_parts TO EDGE inventory_parts VALUES (
+      $"inventory_id"
+    , $"part_num"
+    , $"quantity"
+    , $"is_spare"
+    , $"img_url"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD inventory_minifigs TO EDGE inventory_minifigs VALUES (
+      $"inventory_id"
+    , $"fig_num"
+    , $"quantity"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD inventory_sets TO EDGE inventory_sets VALUES (
+      $"inventory_id"
+    , $"set_num"
+    , $"quantity"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD elements TO EDGE colors_to_elements VALUES (
+      $"color_id"
+    , $"element_id"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD sets TO EDGE themes_to_sets VALUES (
+      $"theme_id"
+    , $"set_num"
+  ) USING SEPARATOR="\t", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD themes TO EDGE themes_to_themes VALUES (
+      $"id"
+    , $"parent_id"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD part_relationships TO EDGE parts_to_parts VALUES (
+      $"parent_part_num"
+    , $"child_part_num"
+    , $"rel_type"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD elements TO EDGE parts_to_elements VALUES (
+      $"part_num"
+    , $"element_id"
+  ) USING SEPARATOR=",", HEADER="true", EOL="\n", QUOTE="double";
+
+  LOAD parts TO EDGE part_categories_to_parts VALUES (
+      $"part_cat_id"
+    , $"part_num"
+  ) USING SEPARATOR="\t", HEADER="true", EOL="\n", QUOTE="double";
+
+}
+
+RUN LOADING JOB ld_legoland_data
+DROP JOB ld_legoland_data
